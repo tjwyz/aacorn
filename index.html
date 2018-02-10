@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<script type="text/javascript" src="./dist/acorn.js"></script>
+</head>
+<body>
+<input id='container' type='textarea'></input>
+<script type="text/javascript">
+	document.getElementById('container').addEventListener('keyup',function(e){
+		if(e.keyCode == 13){
+			// console.log();
+			acorn.parse(document.getElementById('container').value);
+		}
+	});
+</script>
+</body>
+</html>
