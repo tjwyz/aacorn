@@ -1,4 +1,5 @@
 import {Parser} from "./parse"
+import {types} from "./tokenType"
 
 const pp = Parser.prototype
 
@@ -12,6 +13,7 @@ function isIdentifierStart (code) {
  * @DateTime 2018-02-12
  */
 pp.nextToken = function () {
+	debugger;
 	this.skipSpace()
 	if (this.pos >= this.input.length) return this.finishToken('eof','eof')
 
@@ -22,9 +24,9 @@ pp.nextToken = function () {
 		this.pos = this.pos + identifier.length;
 
 		if (this.keywords.test(identifier)) {
-			this.finishToken(identifier,identifier)
+			this.finishToken(types[identifier],identifier)
 		} else {
-			this.finishToken('name',identifier)
+			this.finishToken(types.name,identifier)
 		}
 
 	} else {
@@ -60,29 +62,45 @@ pp.skipSpace = function() {
 pp.updateTokenFromCode = function() {
 	var nowCharCode = this.nowCharCode();
 	switch (nowCharCode) {
+		case 37: case 42: // * %
+			return this.readToken_modulo_star(nowCharCode);
+		case 43: case 45: // + -
+			return this.readToken_plusMin(nowCharCode);
+		case 47: // \/
+			return this.readToken_slash(nowCharCode);
 		case 61:
 			this.pos ++;
-			this.end = this.pos;
-			this.finishToken('equal','=')
-			break
+			return this.finishToken(types.eq,'=')
+		case 123:
+			this.pos ++;
+			return this.finishToken(types.braceL,'{')
+		case 125:
+			this.pos ++;
+			return this.finishToken(types.braceR,'}')
+		case 91:
+			this.pos ++;
+			return this.finishToken(types.bracketL,'[')
+		case 93:
+			this.pos ++;
+			return this.finishToken(types.bracketR,']')
+		case 40:
+			this.pos ++;
+			return this.finishToken(types.parenL,'(')
+		case 41:
+			this.pos ++;
+			return this.finishToken(types.parenR,')')
 		case 59:
 			this.pos ++;
-			this.end = this.pos;
-			this.finishToken('semicolon',';')
-			break
+			return this.finishToken(types.semicolon,';')
 		case 44:
 			this.pos ++;
-			this.end = this.pos;
-			this.finishToken('comma',',')
-			break
+			return this.finishToken(types.comma,',')
 		case 48: // '0'
-			this.readNumber();
-			break
+			return this.readNumber();
 		case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: // 1-9
-			this.readNumber();
-			break
+			return this.readNumber();
 		default :
-			this.unexpected();
+			return this.unexpected();
 	}
 
 }
@@ -142,4 +160,27 @@ pp.readInt =function(radix){
 		total += val * radix
 	}
 	return total;
+}
+pp.finishOpreator = function(type ,length){
+	var value = this.nowChar(length)
+	this.pos += length 
+	this.finishToken(type,value)
+}
+pp.readToken_modulo_star = function(code){
+	var type = code == 37 ? tt.modulo : tt.star
+	this.finishOpreator(type,1)
+}
+pp.readToken_plusMin = function(code){
+	var next = this.nextCharCode()
+	if (next == code) return this.finishOpreator(tt.incDec,2)
+	if (next == 61) return this.finishOpreator(tt.assign,2)
+	this.finishOpreator(tt.plusMin,1)
+}
+pp.readToken_slash = function(){
+	var next = this.nextCharCode()
+	if (next == code) {
+		//处理注释逻辑
+		return
+	}
+	this.finishOpreator(tt.slash,1)
 }

@@ -1,3 +1,6 @@
+/**
+ * token处理与报错相关方法
+ */
 import {Parser} from "./parse"
 
 const pp = Parser.prototype
@@ -5,12 +8,9 @@ const pp = Parser.prototype
 const lineBreak = /\r\n?|\n|\u2028|\u2029/
 
 
-/**
- * 当前type与输入相等时：nextToken 并返回布尔值
- * @Author   tjwyz
- * @DateTime 2018-02-12
- * @return   {[Boolean]} 
- */
+//若当前tokenType与参数type相同 返回true 并next
+//负责返回false
+
 pp.eat = function (type) {
 	if (this.type == type) {
 		this.nextToken()
@@ -19,27 +19,30 @@ pp.eat = function (type) {
 		return false;
 	}
 }
-/**
- * 强制当前type为分号，负责报错
- * @Author   tjwyz
- * @DateTime 2018-02-12
- */
-pp.semicolon = function () {
-	if (this.eat('semicolon') || this.canMissSemicolon) {
-	} else {
-		this.unexpected
-	}
+
+//希望当前tokenType是参数type类型  若是则eat(consume) it
+//否则就报错
+pp.expect = function(type) {
+  this.eat(type) || this.unexpected()
 }
-pp.equal = function () {}
-pp.braceL = function () {}
-pp.braceR = function () {}
-/**
- * 可以省略分号的情况
- * [行尾 | } | 换行]
- * @Author   tjwyz
- * @DateTime 2018-02-12
- * @return   {[Boolean]}
- */
+
+//throw
+pp.unexpected = function(description){
+	description = description || "Unexpected token";
+	throw (description);
+}
+pp.notSupport = function(){
+	throw ("NotSupport");
+}
+
+//现在就要吃一个分号
+//如果当前不是分号  并且在当前位置又不能省略分号
+//那就报错吧
+//把分号单独封装一个函数的原因是  有分号可能被省略的case..
+pp.semicolon = function() {
+  if (!this.eat(tt.semi) && !this.canMissSemicolon()) this.unexpected()
+}
+
 pp.canMissSemicolon = function(){
 	if (lineBreak.test(this.sliceStr(this.lastTokenEnd, this.start))) {
 		return true
@@ -51,3 +54,4 @@ pp.canMissSemicolon = function(){
 		return false
 	}
 }
+

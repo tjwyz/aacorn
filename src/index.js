@@ -1,7 +1,6 @@
 import {Parser} from "./parse"
 import "./token"
 import "./node"
-import "./throw"
 import "./locate"
 import "./statement"
 import "./util"

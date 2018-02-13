@@ -11,8 +11,12 @@ const pp = Parser.prototype
 pp.nowCharCode = function () {
 	return this.input.charCodeAt(this.pos);
 }
-pp.nowChar = function () {
-	return this.input.slice(this.pos, this.pos + 1);
+pp.nextCharCode = function () {
+	return this.input.charCodeAt(this.pos + 1);
+}
+pp.nowChar = function (len) {
+	var len = len || 1;
+	return this.input.slice(this.pos, this.pos + len);
 }
 pp.sliceStr = function (start ,end) {
 	return this.input.slice(start ,end);

@@ -12,8 +12,9 @@ export class Node {
 
 const pp = Parser.prototype
 
-pp.startNode = function () {
-    return new Node(this.start)
+pp.startNode = function (pos) {
+    pos = pos || this.start
+    return new Node(pos)
 }
 // adding `type` and `end` properties.
 pp.finishNode = function (node, type, pos) {
